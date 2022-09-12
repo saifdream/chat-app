@@ -1,13 +1,14 @@
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {useParams} from "react-router-dom";
 import {useDispatch, useSelector} from "react-redux";
-import InfiniteScroll from "react-infinite-scroll-component";
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import PerfectScrollbar from "react-perfect-scrollbar";
+import InfiniteScroll from "react-infinite-scroll-component";
 import Message from "./Message";
 import {messagesApi} from "../../../features/messages/messagesApi";
 
-export default function Messages({messages = [], totalCount}) {
+export default function Messages({messages = [], totalCount=0, isLoading}) {
+    const prevScrollY  = useRef(0);
     const {user} = useSelector((state) => state.auth) || {};
     const {id} = useParams();
     const {email} = user || {};
@@ -19,17 +20,13 @@ export default function Messages({messages = [], totalCount}) {
         setPage((prevPage) => prevPage + 1);
     };
 
-    console.log(totalCount , +process.env.REACT_APP_MESSAGES_PER_PAGE, page)
-    console.log(Math.ceil( totalCount / +process.env.REACT_APP_MESSAGES_PER_PAGE) > page)
+    // console.log(totalCount, page)
+    // console.log("hasMore", hasMore, page)
+    // console.log(Math.ceil( totalCount / +process.env.REACT_APP_MESSAGES_PER_PAGE))
 
     useEffect(() => {
         if (page > 1) {
-            dispatch(
-                messagesApi.endpoints.getMoreMessages.initiate({
-                    id,
-                    page,
-                })
-            );
+            dispatch( messagesApi.endpoints.getMoreMessages.initiate({ id, page }) );
         }
     }, [page, id, dispatch]);
 
@@ -42,20 +39,23 @@ export default function Messages({messages = [], totalCount}) {
 
     return (
         <PerfectScrollbar>
-            <div className="relative w-full h-[calc(100vh_-_197px)] p-6 overflow-y-auto flex flex-col-reverse"
-                 id="scrollableDiv">
+            <div
+                className="relative w-full h-[calc(100vh_-_197px)] p-6 overflow-y-auto flex flex-col-reverse"
+                id="scrollableDiv"
+            >
                 <ul className="relative">
                     <InfiniteScroll
-                        dataLength={totalCount}
+                        dataLength={page * +process.env.REACT_APP_MESSAGES_PER_PAGE}
                         next={fetchMore}
                         hasMore={hasMore}
                         loader={
-                            <p className="top-0 absolute text-center w-full px-5 py-2">
-                                <strong className="px-5 py-2" style={{backgroundColor: 'aliceblue'}}>Loading...</strong>
-                            </p>
+                                isLoading && <p className="top-0 absolute text-center w-full px-5 py-2">
+                                    <strong className="px-5 py-2" style={{backgroundColor: 'aliceblue'}}>Loading...</strong>
+                                </p>
+
                         }
                         // height={window.innerHeight - 197}
-                        // inverse={true}
+                        inverse={true}
                         scrollableTarget="scrollableDiv"
                         endMessage={
                             <p className="top-0 absolute mx-5 my-2 w-full" style={{textAlign: 'center'}}>
@@ -72,6 +72,7 @@ export default function Messages({messages = [], totalCount}) {
                                     message: lastMessage,
                                     id,
                                     sender,
+                                    timestamp
                                 } = message || {};
 
                                 const justify =
@@ -79,7 +80,7 @@ export default function Messages({messages = [], totalCount}) {
 
                                 return (
                                     <Message
-                                        key={id}
+                                        key={timestamp}
                                         justify={justify}
                                         message={lastMessage}
                                     />

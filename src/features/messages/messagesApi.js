@@ -1,4 +1,4 @@
-import { apiSlice } from "../api/apiSlice";
+import {apiSlice} from "../api/apiSlice";
 import io from "socket.io-client";
 
 export const messagesApi = apiSlice.injectEndpoints({
@@ -31,7 +31,14 @@ export const messagesApi = apiSlice.injectEndpoints({
                     await cacheDataLoaded;
                     socket.on("message", (data) => {
                         updateCachedData((draft) => {
-                            draft.data.push(data?.data);
+                            /*
+                            * Need to check duplicate message,
+                            * because socket event fire before
+                            * pessimistic cache update event
+                            * */
+                            const foundMsg = draft.data.findIndex((msg) => msg.id === data?.data?.id);
+                            if (foundMsg === -1)
+                                draft.data.push(data?.data);
                         });
                     });
                 } catch (err) {
@@ -42,7 +49,10 @@ export const messagesApi = apiSlice.injectEndpoints({
             },
         }),
         getMoreMessages: builder.query({
-            query: ({id, page}) => `/messages?conversationId=${id}&_sort=timestamp&_order=desc&_page=${page}&_limit=${process.env.REACT_APP_MESSAGES_PER_PAGE}`,
+            query: ({
+                        id,
+                        page
+                    }) => `/messages?conversationId=${id}&_sort=timestamp&_order=desc&_page=${page}&_limit=${process.env.REACT_APP_MESSAGES_PER_PAGE}`,
             async onQueryStarted({id}, {queryFulfilled, dispatch}) {
                 try {
                     const messages = await queryFulfilled;
@@ -75,6 +85,7 @@ export const messagesApi = apiSlice.injectEndpoints({
                 method: "POST",
                 body: data,
             }),
+            /* May be useless */
             async onQueryStarted(arg, {queryFulfilled, dispatch}) {
                 try {
                     const message = await queryFulfilled;
@@ -82,6 +93,7 @@ export const messagesApi = apiSlice.injectEndpoints({
                         dispatch(
                             apiSlice.util.updateQueryData(
                                 "getMessages",
+                                message?.data?.id,
                                 (draft) => {
                                     draft.data.push(message?.data);
                                 }
@@ -96,4 +108,4 @@ export const messagesApi = apiSlice.injectEndpoints({
     }),
 });
 
-export const { useGetMessagesQuery, useAddMessageMutation } = messagesApi;
+export const {useGetMessagesQuery, useAddMessageMutation} = messagesApi;

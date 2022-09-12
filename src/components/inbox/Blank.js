@@ -8,7 +8,7 @@ export default function Blank() {
                 alt="No messages"
                 className="w-10 hidden md:block"
             />
-            <div className="-rotate-90 md:rotate-0 min-w-[130px] md:min-w-0">
+            <div className="-rotate-90 md:rotate-0 min-w-[130px] md:min-w-0 px-5 py-10">
                 No messages yet
             </div>
         </div>

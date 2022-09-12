@@ -34,7 +34,7 @@ export default function ChatBody() {
         content = (
             <>
                 <ChatHead message={data?.data[0]} />
-                <Messages messages={data?.data} totalCount={+data?.totalCount} />
+                <Messages messages={data?.data} totalCount={+data?.totalCount} isLoading={isLoading} />
                 <Options info={data?.data[0]} />
             </>
         );

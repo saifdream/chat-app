@@ -174,13 +174,22 @@ export const conversationsApi = apiSlice.injectEndpoints({
                             })
                         ).unwrap();
 
+                        // console.log(res)
+
                         // update messages cache pessimistically start
                         dispatch(
                             apiSlice.util.updateQueryData(
                                 "getMessages",
                                 res.conversationId.toString(),
                                 (draft) => {
-                                    draft.push(res);
+                                    /*
+                                    * Need to check duplicate message,
+                                    * because socket event fire before
+                                    * pessimistic cache update event
+                                    * */
+                                    const foundMsg = draft.data.findIndex((msg) => msg.id === res?.id);
+                                    if(foundMsg === -1)
+                                        draft.data.push(res);
                                 }
                             )
                         );
