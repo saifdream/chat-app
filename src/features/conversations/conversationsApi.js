@@ -1,6 +1,7 @@
 import io from "socket.io-client";
 import {apiSlice} from "../api/apiSlice";
 import {messagesApi} from "../messages/messagesApi";
+import socket from "../socket";
 
 export const conversationsApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
@@ -16,33 +17,25 @@ export const conversationsApi = apiSlice.injectEndpoints({
             },
             async onCacheEntryAdded(
                 arg,
-                {updateCachedData, cacheDataLoaded, cacheEntryRemoved}
+                {updateCachedData, cacheDataLoaded, cacheEntryRemoved, dispatch}
             ) {
-                // create socket
-                const socket = io("http://localhost:9000", {
-                    reconnectionDelay: 1000,
-                    reconnection: true,
-                    reconnectionAttemps: 10,
-                    transports: ["websocket"],
-                    agent: false,
-                    upgrade: false,
-                    rejectUnauthorized: false,
-                });
-
                 try {
                     await cacheDataLoaded;
                     socket.on("conversation", (data) => {
+                        // console.log("conversation",data)
                         updateCachedData((draft) => {
-                            const conversation = draft.data.find(
-                                (c) => c.id == data?.data?.id
-                            );
+                            const conversation = draft.data.find( (c) => c.id == data?.data?.id );
 
                             if (conversation?.id) {
                                 conversation.message = data?.data?.message;
                                 conversation.timestamp = data?.data?.timestamp;
-                            } else {
-                                // do nothing
                             }
+                            /*
+                            *  Else: If there is no conversation exist in cache,
+                            *  then it will be added from addConversation() endpoint.
+                            *  And new conversation will be added in cache pessimistically.
+                            *  So we don't need to anything here.
+                            * */
                         });
                     });
                 } catch (err) {
@@ -187,7 +180,7 @@ export const conversationsApi = apiSlice.injectEndpoints({
                                     * because socket event fire before
                                     * pessimistic cache update event
                                     * */
-                                    const foundMsg = draft.data.findIndex((msg) => msg.id === res?.id);
+                                    const foundMsg = draft.data.findIndex((msg) => msg.timestamp === res?.timestamp);
                                     if(foundMsg === -1)
                                         draft.data.push(res);
                                 }

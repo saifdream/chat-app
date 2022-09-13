@@ -1,5 +1,5 @@
 import {apiSlice} from "../api/apiSlice";
-import io from "socket.io-client";
+import socket from "../socket";
 
 export const messagesApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
@@ -16,33 +16,49 @@ export const messagesApi = apiSlice.injectEndpoints({
                 arg,
                 {updateCachedData, cacheDataLoaded, cacheEntryRemoved}
             ) {
-                // create socket
-                const socket = io("http://localhost:9000", {
-                    reconnectionDelay: 1000,
-                    reconnection: true,
-                    reconnectionAttemps: 10,
-                    transports: ["websocket"],
-                    agent: false,
-                    upgrade: false,
-                    rejectUnauthorized: false,
-                });
-
                 try {
                     await cacheDataLoaded;
+                    /*
+                    * If somehow socket.on("message") due to server restart,
+                    * may be, it will mis-data update from socket.on("message") then
+                    * socket.on("conversation") update message temporary
+                    * */
+                    /*socket.on("conversation", (data) => {
+                        // console.log("conversationMessage",data)
+                        updateCachedData((draft) => {
+                            const {id, users, message, timestamp} = data.data;
+                            /!*
+                            * Need to check duplicate message,
+                            * because socket event fire before
+                            * pessimistic cache update event
+                            * *!/
+                            const foundMsg = draft.data.findIndex((msg) => msg.timestamp === timestamp);
+                            if (foundMsg === -1) {
+                                draft.data.push({
+                                    conversationId: id,
+                                    sender: users[0],
+                                    receiver: users[1],
+                                    message: message,
+                                    timestamp: timestamp,
+                                });
+                            }
+                        })
+                    });*/
+
                     socket.on("message", (data) => {
+                        console.log("message",data)
                         updateCachedData((draft) => {
                             /*
                             * Need to check duplicate message,
                             * because socket event fire before
                             * pessimistic cache update event
                             * */
-                            const foundMsg = draft.data.findIndex((msg) => msg.id === data?.data?.id);
+                            const foundMsg = draft.data.findIndex((msg) => msg.timestamp === data?.data?.timestamp);
                             if (foundMsg === -1)
                                 draft.data.push(data?.data);
                         });
                     });
-                } catch (err) {
-                }
+                } catch (err) {}
 
                 await cacheEntryRemoved;
                 socket.close();

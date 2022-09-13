@@ -1,14 +1,13 @@
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
 import {useDispatch, useSelector} from "react-redux";
-import 'react-perfect-scrollbar/dist/css/styles.css';
+// import 'react-perfect-scrollbar/dist/css/styles.css';
 import PerfectScrollbar from "react-perfect-scrollbar";
 import InfiniteScroll from "react-infinite-scroll-component";
 import Message from "./Message";
 import {messagesApi} from "../../../features/messages/messagesApi";
 
 export default function Messages({messages = [], totalCount=0, isLoading}) {
-    const prevScrollY  = useRef(0);
     const {user} = useSelector((state) => state.auth) || {};
     const {id} = useParams();
     const {email} = user || {};

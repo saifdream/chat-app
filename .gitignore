@@ -11,6 +11,9 @@
 # production
 /build
 
+.github
+.gitHeroku
+
 # misc
 .DS_Store
 .env.local
