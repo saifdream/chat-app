@@ -1,4 +1,3 @@
-import io from "socket.io-client";
 import {apiSlice} from "../api/apiSlice";
 import {messagesApi} from "../messages/messagesApi";
 import socket from "../socket";
@@ -6,25 +5,18 @@ import socket from "../socket";
 export const conversationsApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         getConversations: builder.query({
-            query: (email) =>
-                `/conversations?participants_like=${email}&_sort=timestamp&_order=desc&_page=1&_limit=${process.env.REACT_APP_CONVERSATIONS_PER_PAGE}`,
+            query: (email) => `/conversations?participants_like=${email}&_sort=timestamp&_order=desc&_page=1&_limit=${process.env.REACT_APP_CONVERSATIONS_PER_PAGE}`,
             transformResponse(apiResponse, meta) {
                 const totalCount = meta.response.headers.get("X-Total-Count");
-                return {
-                    data: apiResponse,
-                    totalCount,
-                };
+                return {data: apiResponse, totalCount};
             },
-            async onCacheEntryAdded(
-                arg,
-                {updateCachedData, cacheDataLoaded, cacheEntryRemoved, dispatch}
-            ) {
+            async onCacheEntryAdded(arg, {updateCachedData, cacheDataLoaded, cacheEntryRemoved}) {
                 try {
                     await cacheDataLoaded;
                     socket.on("conversation", (data) => {
                         // console.log("conversation",data)
                         updateCachedData((draft) => {
-                            const conversation = draft.data.find( (c) => c.id == data?.data?.id );
+                            const conversation = draft.data.find((c) => c.id == data?.data?.id);
 
                             if (conversation?.id) {
                                 conversation.message = data?.data?.message;
@@ -46,8 +38,7 @@ export const conversationsApi = apiSlice.injectEndpoints({
             },
         }),
         getMoreConversations: builder.query({
-            query: ({email, page}) =>
-                `/conversations?participants_like=${email}&_sort=timestamp&_order=desc&_page=${page}&_limit=${process.env.REACT_APP_CONVERSATIONS_PER_PAGE}`,
+            query: ({ email, page }) => `/conversations?participants_like=${email}&_sort=timestamp&_order=desc&_page=${page}&_limit=${process.env.REACT_APP_CONVERSATIONS_PER_PAGE}`,
             async onQueryStarted({email}, {queryFulfilled, dispatch}) {
                 try {
                     const conversations = await queryFulfilled;
@@ -75,8 +66,7 @@ export const conversationsApi = apiSlice.injectEndpoints({
             },
         }),
         getConversation: builder.query({
-            query: ({userEmail, participantEmail}) =>
-                `/conversations?participants_like=${userEmail}-${participantEmail}&&participants_like=${participantEmail}-${userEmail}`,
+            query: ({ userEmail,participantEmail }) => `/conversations?participants_like=${userEmail}-${participantEmail}&&participants_like=${participantEmail}-${userEmail}`,
         }),
         addConversation: builder.mutation({
             query: ({sender, data}) => ({
@@ -181,7 +171,7 @@ export const conversationsApi = apiSlice.injectEndpoints({
                                     * pessimistic cache update event
                                     * */
                                     const foundMsg = draft.data.findIndex((msg) => msg.timestamp === res?.timestamp);
-                                    if(foundMsg === -1)
+                                    if (foundMsg === -1)
                                         draft.data.push(res);
                                 }
                             )

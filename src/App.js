@@ -9,9 +9,6 @@ import Register from "./pages/Register";
 
 function App() {
     const authChecked = useAuthCheck();
-
-    // console.log("process.env.REACT_APP_API_URL", process.env.REACT_APP_API_URL)
-
     return !authChecked ? (
         <div>Checking authentication....</div>
     ) : (

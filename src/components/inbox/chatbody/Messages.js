@@ -19,10 +19,6 @@ export default function Messages({messages = [], totalCount=0, isLoading}) {
         setPage((prevPage) => prevPage + 1);
     };
 
-    // console.log(totalCount, page)
-    // console.log("hasMore", hasMore, page)
-    // console.log(Math.ceil( totalCount / +process.env.REACT_APP_MESSAGES_PER_PAGE))
-
     useEffect(() => {
         if (page > 1) {
             dispatch( messagesApi.endpoints.getMoreMessages.initiate({ id, page }) );

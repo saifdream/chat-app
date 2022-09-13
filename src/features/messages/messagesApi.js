@@ -7,10 +7,7 @@ export const messagesApi = apiSlice.injectEndpoints({
             query: (id) => `/messages?conversationId=${id}&_sort=timestamp&_order=desc&_page=1&_limit=${process.env.REACT_APP_MESSAGES_PER_PAGE}`,
             transformResponse(apiResponse, meta) {
                 const totalCount = meta.response.headers.get("X-Total-Count");
-                return {
-                    data: apiResponse,
-                    totalCount,
-                };
+                return { data: apiResponse, totalCount };
             },
             async onCacheEntryAdded(
                 arg,
@@ -65,10 +62,7 @@ export const messagesApi = apiSlice.injectEndpoints({
             },
         }),
         getMoreMessages: builder.query({
-            query: ({
-                        id,
-                        page
-                    }) => `/messages?conversationId=${id}&_sort=timestamp&_order=desc&_page=${page}&_limit=${process.env.REACT_APP_MESSAGES_PER_PAGE}`,
+            query: ({ id, page }) => `/messages?conversationId=${id}&_sort=timestamp&_order=desc&_page=${page}&_limit=${process.env.REACT_APP_MESSAGES_PER_PAGE}`,
             async onQueryStarted({id}, {queryFulfilled, dispatch}) {
                 try {
                     const messages = await queryFulfilled;

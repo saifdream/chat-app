@@ -28,7 +28,7 @@ router.render = (req, res) => {
 
     if ( path.includes("/messages") && (method === "POST" || method === "PATCH") ) {
         // emit socket event
-        console.log(res.locals.data)
+        // console.log(res.locals.data)
         io.emit("message", {
             data: res.locals.data,
         });
