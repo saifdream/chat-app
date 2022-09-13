@@ -46,7 +46,7 @@ export const messagesApi = apiSlice.injectEndpoints({
                     });*/
 
                     socket.on("message", (data) => {
-                        console.log("message",data)
+                        // console.log("message",data)
                         updateCachedData((draft) => {
                             /*
                             * Need to check duplicate message,
@@ -101,7 +101,7 @@ export const messagesApi = apiSlice.injectEndpoints({
                 method: "POST",
                 body: data,
             }),
-            /* May be useless */
+            /* May be useless, because we update message in addConversation, editConversation */
             async onQueryStarted(arg, {queryFulfilled, dispatch}) {
                 try {
                     const message = await queryFulfilled;
