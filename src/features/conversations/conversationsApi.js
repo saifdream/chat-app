@@ -17,17 +17,18 @@ export const conversationsApi = apiSlice.injectEndpoints({
                         // console.log("conversation",data)
                         updateCachedData((draft) => {
                             const conversation = draft.data.find((c) => c.id == data?.data?.id);
-
+                            // console.log("arg",arg)
                             if (conversation?.id) {
                                 conversation.message = data?.data?.message;
                                 conversation.timestamp = data?.data?.timestamp;
+                            } else {
+                                if(data.data.participants.split("-").includes(arg)) {
+                                    // console.log("matched")
+                                    draft.data.unshift(data.data);
+                                } else {
+                                    // console.log("not matched")
+                                }
                             }
-                            /*
-                            *  Else: If there is no conversation exist in cache,
-                            *  then it will be added from addConversation() endpoint.
-                            *  And new conversation will be added in cache pessimistically.
-                            *  So we don't need to anything here.
-                            * */
                         });
                     });
                 } catch (err) {
@@ -83,7 +84,9 @@ export const conversationsApi = apiSlice.injectEndpoints({
                                 "getConversations",
                                 arg.sender,
                                 (draft) => {
-                                    draft.data.push(conversation?.data);
+                                    const foundConversation = draft.data.findIndex((c) => c.id == conversation?.data?.id);
+                                    if (foundConversation === -1)
+                                        draft.data.unshift(conversation?.data);
                                 }
                             )
                         );
