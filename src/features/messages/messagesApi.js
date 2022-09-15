@@ -20,15 +20,15 @@ export const messagesApi = apiSlice.injectEndpoints({
                     * may be, it will mis-data update from socket.on("message") then
                     * socket.on("conversation") update message temporary
                     * */
-                    socket.on("conversation", (data) => {
+                    /*socket.on("conversation", (data) => {
                         // console.log("conversationMessage",data)
                         updateCachedData((draft) => {
                             const {id, users, message, timestamp} = data.data;
-                            /*
+                            /!*
                             * Need to check duplicate message,
                             * because socket event fire before
                             * pessimistic cache update event
-                            * */
+                            * *!/
                             const foundMsg = draft.data.findIndex((msg) => msg.timestamp === timestamp);
                             if (foundMsg === -1) {
                                 if(data.data.id === +arg)
@@ -41,7 +41,7 @@ export const messagesApi = apiSlice.injectEndpoints({
                                     });
                             }
                         })
-                    });
+                    });*/
 
                     socket.on("message", (data) => {
                         // console.log("message",data)
