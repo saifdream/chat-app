@@ -9,13 +9,13 @@ export const messagesApi = apiSlice.injectEndpoints({
                 const totalCount = meta.response.headers.get("X-Total-Count");
                 return { data: apiResponse, totalCount };
             },
-            async onCacheEntryAdded(
+            /*async onCacheEntryAdded(
                 arg,
                 {updateCachedData, cacheDataLoaded, cacheEntryRemoved}
             ) {
                 try {
                     await cacheDataLoaded;
-                    /*socket.on("message", (data) => {
+                    socket.on("message", (data) => {
                         // console.log("message",data)
                         // console.log(arg, data.data.conversationId)
                         updateCachedData((draft) => {
@@ -34,14 +34,14 @@ export const messagesApi = apiSlice.injectEndpoints({
                                 }
                             // }
                         });
-                    });*/
+                    });
                 } catch (err) {
                     console.log(err);
                 }
 
                 await cacheEntryRemoved;
-                socket.close();
-            },
+                // socket.close();
+            },*/
         }),
         getMoreMessages: builder.query({
             query: ({ id, page }) => `/messages?conversationId=${id}&_sort=timestamp&_order=desc&_page=${page}&_limit=${process.env.REACT_APP_MESSAGES_PER_PAGE}`,
@@ -77,7 +77,6 @@ export const messagesApi = apiSlice.injectEndpoints({
                 method: "POST",
                 body: data,
             }),
-            /* May be useless, because we update message in addConversation, editConversation */
             async onQueryStarted(arg, {queryFulfilled, dispatch}) {
                 try {
                     const message = await queryFulfilled;
@@ -87,11 +86,19 @@ export const messagesApi = apiSlice.injectEndpoints({
                                 "getMessages",
                                 message?.data?.id,
                                 (draft) => {
-                                    draft.data.push(message?.data);
+                                    /*
+                                    * Need to check duplicate message,
+                                    * because socket event fire before
+                                    * pessimistic cache update event
+                                    * */
+                                    const foundMsg = draft.data.findIndex((msg) => msg.id === message?.data?.id);
+                                    if (foundMsg === -1)
+                                        draft.data.push(message?.data);
                                 }
                             )
                         );
-                    }                } catch (err) {
+                    }
+                } catch (err) {
                     console.log(err);
                 }
             },

@@ -21,7 +21,7 @@ export const conversationsApi = apiSlice.injectEndpoints({
                                 conversation.timestamp = data?.data?.timestamp;
                             } else {
                                 const participants = data.data.participants.split("-");
-                                if(participants.includes(arg)) { //  && data.data.users[1] === arg
+                                if(participants.includes(arg) && data.data.users[0].email !== arg) {
                                     draft.data.unshift(data.data);
                                 }
                             }
@@ -29,16 +29,12 @@ export const conversationsApi = apiSlice.injectEndpoints({
                     });
 
                     socket.on("message", (data) => {
-                        console.log("message",data)
-                        console.log(arg, data.data.conversationId)
                         dispatch(
                             apiSlice.util.updateQueryData(
                                 "getMessages",
                                 data.data.conversationId.toString(),
                                 (draft) => {
-                                    // console.log("draft",JSON.parse(JSON.stringify(draft)))
-                                    const messages = JSON.parse(JSON.stringify(draft)).data;
-                                    const messageFound = messages.findIndex((m) => m.conversationId == data.data.conversationId );
+                                    const messageFound = draft.data.findIndex((m) => m.conversationId == data.data.conversationId );
                                     if (messageFound !== -1)
                                         draft.data.push(data?.data);
                                 }
@@ -100,8 +96,22 @@ export const conversationsApi = apiSlice.injectEndpoints({
                                 arg.sender,
                                 (draft) => {
                                     const foundConversation = draft.data.findIndex((c) => c.id == conversation?.data?.id);
-                                    if (foundConversation === -1)
+                                    if (foundConversation === -1) {
                                         draft.data.unshift(conversation?.data);
+                                    }
+                                }
+                            )
+                        );
+
+                        dispatch(
+                            apiSlice.util.updateQueryData(
+                                "getConversation",
+                                {
+                                    participantEmail: conversation?.data?.users[1].email,
+                                    userEmail: arg.sender,
+                                },
+                                (draft) => {
+                                    draft.push(conversation?.data);
                                 }
                             )
                         );
@@ -164,8 +174,8 @@ export const conversationsApi = apiSlice.injectEndpoints({
                         const receiverUser = users.find(
                             (user) => user.email !== arg.sender
                         );
-
-                        const res = await dispatch(
+                        // const res = await
+                        dispatch(
                             messagesApi.endpoints.addMessage.initiate({
                                 conversationId: conversation?.data?.id,
                                 sender: senderUser,
@@ -173,27 +183,25 @@ export const conversationsApi = apiSlice.injectEndpoints({
                                 message: arg.data.message,
                                 timestamp: arg.data.timestamp,
                             })
-                        ).unwrap();
-
-                        // console.log(res)
-
+                        );
+                        // .unwrap();
                         // update messages cache pessimistically start
-                        dispatch(
+                        /*dispatch(
                             apiSlice.util.updateQueryData(
                                 "getMessages",
                                 res.conversationId.toString(),
                                 (draft) => {
-                                    /*
+                                    /!*
                                     * Need to check duplicate message,
                                     * because socket event fire before
                                     * pessimistic cache update event
-                                    * */
+                                    * *!/
                                     const foundMsg = draft.data.findIndex((msg) => msg.id === res?.id);
                                     if (foundMsg === -1)
                                         draft.data.push(res);
                                 }
                             )
-                        );
+                        );*/
                         // update messages cache pessimistically end
                     }
                 } catch (err) {

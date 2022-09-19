@@ -23,20 +23,13 @@ export default function Modal({ open, control }) {
         skip: !userCheck,
     });
 
-    const [addConversation, { isSuccess: isAddConversationSuccess }] =
-        useAddConversationMutation();
-    const [editConversation, { isSuccess: isEditConversationSuccess }] =
-        useEditConversationMutation();
+    const [addConversation, { isSuccess: isAddConversationSuccess }] = useAddConversationMutation();
+    const [editConversation, { isSuccess: isEditConversationSuccess }] = useEditConversationMutation();
 
     useEffect(() => {
         if (participant?.length > 0 && participant[0].email !== myEmail) {
             // check conversation existance
-            dispatch(
-                conversationsApi.endpoints.getConversation.initiate({
-                    userEmail: myEmail,
-                    participantEmail: to,
-                })
-            )
+            dispatch( conversationsApi.endpoints.getConversation.initiate({ userEmail: myEmail, participantEmail: to }) )
                 .unwrap()
                 .then((data) => {
                     setConversation(data);
@@ -77,7 +70,6 @@ export default function Modal({ open, control }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
         if (conversation?.length > 0) {
             // edit conversation
             editConversation({
@@ -140,7 +132,6 @@ export default function Modal({ open, control }) {
                                 <textarea
                                     id="message"
                                     name="message"
-                                    type="text"
                                     required
                                     className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-violet-500 focus:border-violet-500 focus:z-10 sm:text-sm"
                                     placeholder="Message"

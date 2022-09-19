@@ -1,9 +1,9 @@
 import gravatarUrl from "gravatar-url";
 import moment from "moment";
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import {useDispatch, useSelector} from "react-redux";
+import {Link} from "react-router-dom";
 import {
     conversationsApi,
     useGetConversationsQuery,
@@ -13,11 +13,10 @@ import Error from "../ui/Error";
 import ChatItem from "./ChatItem";
 
 export default function ChatItems() {
-    const { user } = useSelector((state) => state.auth) || {};
-    const { email } = user || {};
-    const { data, isLoading, isError, error } =
-        useGetConversationsQuery(email) || {};
-    const { data: conversations, totalCount } = data || {};
+    const {user} = useSelector((state) => state.auth) || {};
+    const {email} = user || {};
+    const {data, isLoading, isError, error} = useGetConversationsQuery(email) || {};
+    const {data: conversations, totalCount} = data || {};
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const dispatch = useDispatch();
@@ -28,23 +27,13 @@ export default function ChatItems() {
 
     useEffect(() => {
         if (page > 1) {
-            dispatch(
-                conversationsApi.endpoints.getMoreConversations.initiate({
-                    email,
-                    page,
-                })
-            );
+            dispatch(conversationsApi.endpoints.getMoreConversations.initiate({email, page}));
         }
     }, [page, email, dispatch]);
 
     useEffect(() => {
         if (totalCount > 0) {
-            const more =
-                Math.ceil(
-                    totalCount /
-                        Number(process.env.REACT_APP_CONVERSATIONS_PER_PAGE)
-                ) > page;
-
+            const more = Math.ceil(totalCount / Number(process.env.REACT_APP_CONVERSATIONS_PER_PAGE)) > page;
             setHasMore(more);
         }
     }, [totalCount, page]);
@@ -57,7 +46,7 @@ export default function ChatItems() {
     } else if (!isLoading && isError) {
         content = (
             <li className="m-2 text-center">
-                <Error message={error?.data} />
+                <Error message={error?.data}/>
             </li>
         );
     } else if (!isLoading && !isError && conversations?.length === 0) {
@@ -74,11 +63,11 @@ export default function ChatItems() {
                 {
                     conversations
                         .slice()
-                        .sort((a, b)=> b.timestamp - a.timestamp)
+                        .sort((a, b) => b.timestamp - a.timestamp)
                         .map((conversation) => {
-                            const { id, message, timestamp } = conversation;
-                            const { email } = user || {};
-                            const { name, email: partnerEmail } = getPartnerInfo( conversation.users, email );
+                            const {id, message, timestamp} = conversation;
+                            const {email} = user || {};
+                            const {name, email: partnerEmail} = getPartnerInfo(conversation.users, email);
 
                             return (
                                 <li key={id}>
