@@ -71,29 +71,31 @@ export default function ChatItems() {
                 loader={<h4>Loading...</h4>}
                 height={window.innerHeight - 129}
             >
-                {conversations.map((conversation) => {
-                    const { id, message, timestamp } = conversation;
-                    const { email } = user || {};
-                    const { name, email: partnerEmail } = getPartnerInfo(
-                        conversation.users,
-                        email
-                    );
+                {
+                    conversations
+                        .slice()
+                        .sort((a, b)=> b.timestamp - a.timestamp)
+                        .map((conversation) => {
+                            const { id, message, timestamp } = conversation;
+                            const { email } = user || {};
+                            const { name, email: partnerEmail } = getPartnerInfo( conversation.users, email );
 
-                    return (
-                        <li key={id}>
-                            <Link to={`/inbox/${id}`}>
-                                <ChatItem
-                                    avatar={gravatarUrl(partnerEmail, {
-                                        size: 80,
-                                    })}
-                                    name={name}
-                                    lastMessage={message}
-                                    lastTime={moment(timestamp).fromNow()}
-                                />
-                            </Link>
-                        </li>
-                    );
-                })}
+                            return (
+                                <li key={id}>
+                                    <Link to={`/inbox/${id}`}>
+                                        <ChatItem
+                                            avatar={gravatarUrl(partnerEmail, {
+                                                size: 80,
+                                            })}
+                                            name={name}
+                                            lastMessage={message}
+                                            lastTime={moment(timestamp).fromNow()}
+                                        />
+                                    </Link>
+                                </li>
+                            );
+                        })
+                }
             </InfiniteScroll>
         );
     }

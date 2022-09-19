@@ -10,28 +10,43 @@ export const conversationsApi = apiSlice.injectEndpoints({
                 const totalCount = meta.response.headers.get("X-Total-Count");
                 return {data: apiResponse, totalCount};
             },
-            async onCacheEntryAdded(arg, {updateCachedData, cacheDataLoaded, cacheEntryRemoved}) {
+            async onCacheEntryAdded(arg, {updateCachedData, cacheDataLoaded, cacheEntryRemoved, dispatch}) {
                 try {
                     await cacheDataLoaded;
                     socket.on("conversation", (data) => {
-                        // console.log("conversation",data)
                         updateCachedData((draft) => {
                             const conversation = draft.data.find((c) => c.id == data?.data?.id);
-                            // console.log("arg",arg)
                             if (conversation?.id) {
                                 conversation.message = data?.data?.message;
                                 conversation.timestamp = data?.data?.timestamp;
                             } else {
-                                if(data.data.participants.split("-").includes(arg)) {
-                                    // console.log("matched")
+                                const participants = data.data.participants.split("-");
+                                if(participants.includes(arg)) { //  && data.data.users[1] === arg
                                     draft.data.unshift(data.data);
-                                } else {
-                                    // console.log("not matched")
                                 }
                             }
                         });
                     });
+
+                    socket.on("message", (data) => {
+                        console.log("message",data)
+                        console.log(arg, data.data.conversationId)
+                        dispatch(
+                            apiSlice.util.updateQueryData(
+                                "getMessages",
+                                data.data.conversationId.toString(),
+                                (draft) => {
+                                    // console.log("draft",JSON.parse(JSON.stringify(draft)))
+                                    const messages = JSON.parse(JSON.stringify(draft)).data;
+                                    const messageFound = messages.findIndex((m) => m.conversationId == data.data.conversationId );
+                                    if (messageFound !== -1)
+                                        draft.data.push(data?.data);
+                                }
+                            )
+                        );
+                    });
                 } catch (err) {
+                    console.log(err);
                 }
 
                 await cacheEntryRemoved;
@@ -173,7 +188,7 @@ export const conversationsApi = apiSlice.injectEndpoints({
                                     * because socket event fire before
                                     * pessimistic cache update event
                                     * */
-                                    const foundMsg = draft.data.findIndex((msg) => msg.timestamp === res?.timestamp);
+                                    const foundMsg = draft.data.findIndex((msg) => msg.id === res?.id);
                                     if (foundMsg === -1)
                                         draft.data.push(res);
                                 }
