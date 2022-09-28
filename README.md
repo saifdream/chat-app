@@ -1,5 +1,7 @@
 # Project Plan - Chat Application with RTK Query
 
+Live link [https://gleaming-medovik-065d8c.netlify.app/](https://gleaming-medovik-065d8c.netlify.app/)
+
 ## Requirement Analysis
 
 1. user can register. afer registering, user will be automatically logged in, we will store login info to localstorage (for login persistance) and redirected to inbox page
